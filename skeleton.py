@@ -11,7 +11,7 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
     Molecular dynamics simulation using the Euler or Verlet's algorithms
     to integrate the equations of motion. Calculates energies and other
-    observables at each timestep.
+    observables at each timestep. HELOOOOOO
 
     Parameters
     ----------
