@@ -26,6 +26,14 @@ You will find how to include [links](https://docs.gitlab.com/ee/user/markdown.ht
 useful.
 
 ## Week 1
+10.02.2021: Decided an effective method to write and test our code is to use the notebook directly. First, we agreed on what types of functions we'll make and which inputs and outputs they have so we can make them compatible with one another. 
+We decided the following distribution of work:
+Matteo: Function that calculates the forces on the particles (input: positions of all particles at all times; output: Force components at most recent timestep)
+Alberto: Finish the function that stores each particle's velocity and position at every timestep (input: init_pos and init_vel; output: longer matrix with all coordinates at all timesteps)
+and implement boundary condition
+Pol: Make a function that implements Euler' Method (input: velocities and positions up to timestep n, output: positions and velocities up to timestep
+ n+1)
+
 (due 14 February 2021, 23:59)
 
 
