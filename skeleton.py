@@ -32,7 +32,7 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim): #arguments are 
     Returns
     -------
     Any quantities or observables that you wish to study.
-    """"""
+    """
     
     
     
@@ -44,7 +44,6 @@ def atomic_distances(pos, box_dim):
     Calculates relative positions and distances between particles.
 
     parameters
-    ----------
     pos : np.ndarray
         The positions of the particles in cartesian space
     box_dim : float
@@ -82,6 +81,7 @@ def lj_force(rel_pos, rel_dist):
 
 
 def fcc_lattice(num_atoms, lat_const):
+    
     """
     Initializes a system of atoms on an fcc lattice.
 
