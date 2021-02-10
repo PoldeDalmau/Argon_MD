@@ -6,9 +6,12 @@ you have a good reason to do so.
 
 import numpy as np
 
+init_pos = np.random.uniform(low=0.0, high=1.0, size=(2, 2))
 
 def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
-    """"
+
+def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim): #arguments are global
+
     Molecular dynamics simulation using the Euler or Verlet's algorithms
     to integrate the equations of motion. Calculates energies and other
     observables at each timestep. HELOOOOOO
@@ -29,9 +32,11 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     Returns
     -------
     Any quantities or observables that you wish to study.
-    """
-
-    return
+    """"""
+    
+    
+    
+    return init_pos
 
 
 def atomic_distances(pos, box_dim):
