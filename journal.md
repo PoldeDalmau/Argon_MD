@@ -33,6 +33,8 @@ Alberto: Finish the function that stores each particle's velocity and position a
 and implement boundary condition
 Pol: Make a function that implements Euler's Method (input: velocities and positions up to timestep n, output: positions and velocities at most recent timestep n+1)
 
+Milestones: Positions, velocities and energy are correctly stored in their respective arrays. The functions for the forces, Euler method and energy have been implemented, but we are still missing the periodic boundary conditions, and need to figure out the forces so that they can actually make an impact on the system.
+
 (due 14 February 2021, 23:59)
 
 
