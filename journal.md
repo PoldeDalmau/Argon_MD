@@ -33,12 +33,22 @@ Alberto: Finish the function that stores each particle's velocity and position a
 and implement boundary condition
 Pol: Make a function that implements Euler's Method (input: velocities and positions up to timestep n, output: positions and velocities at most recent timestep n+1)
 
-Milestones: Positions, velocities and energy are correctly stored in their respective arrays. The functions for the forces, Euler method and energy have been implemented, but we are still missing the periodic boundary conditions, and need to figure out the forces so that they can actually make an impact on the system.
+Milestones: Positions, velocities and energy are correctly stored in their respective arrays (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week1_complete.ipynb#L385-387).
+The functions for the forces (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week1_complete.ipynb#L60-84), Euler method (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week1_complete.ipynb#L97-104) and energy (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week1_complete.ipynb#L114-142) have been implemented, but we are still missing the periodic boundary conditions, and need to figure out the forces so that they can actually make an impact on the system.
 
 (due 14 February 2021, 23:59)
 
 
 ## Week 2
+17.02.21: We worked together on the dimensionless units and the kinetic energy expression, and then divided the work: 
+Matteo: Improve the forces function to get rid of for loops, as well as implement it for a 3D system
+Alberto: Improve the journal and plot the distances and energies
+Pol: Create the atomic_distances function and switch the code to 3D
+
+Milestones: we were able to implement the dimensionless units and compute the energy using the minimal image convention implemented in the atomic_distances function (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week2_complete.ipynb#L157-178) and we were able to plot the relative distances and the energies over time (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Plot%20of%20positions%20and%20energies%20-%20Week2.png). After a few steps, the relative distance reaches a minimum (close to zero) for which the kinetic energy becomes massive and the total energy is not conserved.
+Compared to week 1, we removed the majority of useless for loops and replaced them with numpy funcionalities, but some for loops are still there. 
+LJ forces without loops: https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Plot%20of%20positions%20and%20energies%20-%20Week2.png
+Energy without loops: kinetic (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week2_complete.ipynb#L228-231) and potential (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week2_complete.ipynb#L228-231)
 (due 21 February 2021, 23:59)
 
 
