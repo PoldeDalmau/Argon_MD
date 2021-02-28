@@ -53,6 +53,8 @@ Energy without loops: kinetic (https://gitlab.kwant-project.org/computational_ph
 
 
 ## Week 3
+Managed to correct errors with previous week's code (see Week2_complete.ipynb) and implement verlet method (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week3.ipynb#L187-194) for more than 2 particles (only tested for 3 particles thus far). Many of the for loops that slow down the code have not been removed. No attempt at structuring the code has been done this week.
+The functions calculating the potential energy (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week3.ipynb#L229-239) and the force (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week3.ipynb#L146-165) were promoted to n-particles.
 (due 28 February 2021, 23:59)
 
 
