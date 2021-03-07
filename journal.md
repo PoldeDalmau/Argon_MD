@@ -61,6 +61,7 @@ The functions calculating the potential energy (https://gitlab.kwant-project.org
 
 
 ## Week 4
+Please refer to the Week4 velocities and rescaling.ipynb (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week4%20velocities%20and%20rescaling.ipynb#L361) to see a successful implementation of the rescaling. The fcc lattice and appropriate velocity initializations are still in progress.
 (due 7 March 2021, 23:59)
 
 
