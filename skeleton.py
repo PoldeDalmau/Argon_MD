@@ -27,7 +27,20 @@ import matplotlib.pyplot as plt
 #plt.show()
 
 def cleaner(init_pos, strict, box_size = L):
-    #check all x-values greater than a (outside of fcc unit cell) and delete them
+    """checks all values greater than the box size (outside of fcc unit cell) and deletes them
+    
+    Parameters
+    ----------
+    init_pos : np array (some number, 3)
+        configuration of particles
+    strict : 
+        takes 2 possible values. determines whether it muust remove particles on and beyond the boundary ("very")
+        or only the ones beyond the boundary ("less")
+    Returns
+    -------
+    init_pos : np.ndarray
+        Array of particle coordinates
+    """
     guilt = []          #list to be filled with all column numbers of forbidden points"
     for i in range(len(init_pos)):
             for k in range(3):
