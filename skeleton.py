@@ -81,12 +81,11 @@ def fcc_lattice(a):
     alongx = np.copy(square_xy)
     # This will begin to put squares one next to another 
     # along the x-axis. Distance between squares must be 2a
-    # if my understanding of the lattice constant a is correct
-    multiples = np.arange(2, L, 2*a)                            
+    multiples = np.arange(2, L, 2*a)
     multiples = np.reshape(multiples, (len(multiples),1))
     multiples_x = a*multiples*np.array([1, 0, 0])
     multiples_y = a*multiples*np.array([0, 1, 0])
-    multiples_z = a*multiples*np.array([0, 0, 1])
+    multiples_z = a*multiples * np.array([0, 0, 1])
     
     # copy the square on the x-axis
     for i in range(len(multiples)):
@@ -115,14 +114,14 @@ def fcc_lattice(a):
     fcc_positions = np.concatenate((sc_lattice, sc_1, sc_2, sc_3), axis = 0)
     
     fcc_positions = cleaner(fcc_positions, "very")
+    fcc_positions = np.concatenate((fcc_positions, fcc_positions + L/2 * np.array([0, 0, 1])), axis = 0)     # corrects the fact we were only making half the particles we were supposed to
     max_n = len(fcc_positions)
     num_cells = max_n / 4
     if n > max_n:
         print("You wanted %i particles, but only %i particles can actually fit here!" % (n, max_n))
-    
- 
     fcc_positions = fcc_positions[:n,:] #picks n particles out of all, 
     return (fcc_positions)
+
 
 def atomic_distances(pos, output): # output = 0 gives the relative distances, output = 1 gives the relative positions
     rel_pos = pos[:, None, :] - pos[None, :, :]                 # returns one matrix for each particle. Relative distances Lithin the box
