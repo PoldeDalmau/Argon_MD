@@ -45,6 +45,25 @@ def cleaner(init_pos, strict, box_size = L):
     #return "unit_sc", unit_sc, "unit_sc_1",  unit_sc_1, "init_pos", init_pos
     
 def fcc_lattice(a):
+    
+    """
+    Initializes a system of atoms on an fcc lattice.
+
+    Parameters
+    ----------
+    n : int
+        The number of particles in the system
+    a : float
+        The lattice constant for an fcc lattice.
+
+    Returns
+    -------
+    init_pos : np.ndarray
+        Array of particle coordinates
+        
+    note: number of cells= (L/a)^3, 
+          number of particles that we get: number of cells * 2
+    """
     square_xy = np.array([[0, 0, 0], [a, 0, 0], [a, a, 0],[0, a, 0]])
     alongx = np.copy(square_xy)
     # This will begin to put squares one next to another 
@@ -59,7 +78,7 @@ def fcc_lattice(a):
     # copy the square on the x-axis
     for i in range(len(multiples)):
         to_add = multiples_x[i] + square_xy
-        alongx = np.concatenate((alongx,to_add), axis = 0)          # I tried to do this in one step with some outer product of multiples* and square_xy
+        alongx = np.concatenate((alongx,to_add), axis = 0)          
     alongx = cleaner(alongx, "less")
     
     #copy the line of squares to span the xy-plane
@@ -75,16 +94,21 @@ def fcc_lattice(a):
         to_add2 = multiples_z[i] + xy_plane
         sc_lattice = np.concatenate((sc_lattice,to_add2), axis = 0)
     sc_lattice = cleaner(sc_lattice, "less")
-    # print ("sc",len(sc_lattice),"fcc", len(fcc_positions))
     
     # an fcc is equivalent to four simple cubic lattices,
     sc_1 = np.copy(sc_lattice) + a/2*np.array([1,1,0])                         #   one with a(1/2,1/2,0) offset, 
     sc_2 = np.copy(sc_lattice) + a/2*np.array([0,1,1])                         #   one with a(0,1/2,1/2) offset,              
     sc_3 = np.copy(sc_lattice) + a/2*np.array([1,0,1])                         #   and one with a(1/2,0,1/2) offset           
     fcc_positions = np.concatenate((sc_lattice, sc_1, sc_2, sc_3), axis = 0)
+    
     fcc_positions = cleaner(fcc_positions, "very")
-    #init_pos = np.stack((square_xy, ))
-    #init_pos = np.reshape(init_pos, (numberofparticles,3))
+    max_n = len(fcc_positions)
+    num_cells = max_n / 4
+    if n > max_n:
+        print("You wanted %i particles, but only %i particles can actually fit here!" % (n, max_n))
+    
+ 
+    fcc_positions = fcc_positions[:n,:] #picks n particles out of all, 
     return (fcc_positions)
 
 def atomic_distances(pos, output): # output = 0 gives the relative distances, output = 1 gives the relative positions
@@ -184,7 +208,7 @@ def simulate(algorithm):
     """
     Molecular dynamics simulation using the Euler or Verlet's algorithms
     to integrate the equations of motion. Calculates energies and other
-    observables at each timestep. HELOOOOOO
+    observables at each timestep.
 
     Parameters
     ----------
