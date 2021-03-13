@@ -11,4 +11,4 @@ Pol de Dalmau Huguet   (5414024)
 
 
 How to use our code:
-Open the Week2_complete.ipynb notebook (to check the improvements that still had to be done from last week) and run each cell from top to bottom. Same for Week3.ipynb to see this week's progress. Here we have written a script that can implement the Euler Method in 3D for more than 2 particles as intended. One can adjust the number of time steps, time step size but ot the system dimensions (Still LxLxL with L=1). The output will be at the bottom (cell with for-loop) consisting of two plots: one for the Energies (kinetic, potential and total) at each time step using the Euler method and one using the Verlet method.
+Open the Main.ipynb notebook and run each cell from top to bottom. Here we have written a script that can implement the Verlet Method in 3D for more n particles. One can adjust the number of time steps, number of particles, time step size, system size L, the lattice constant a of the fcc lattice and the temperature. One will obtain a plot of energy (kinetic, potential and total) which is rescaled several times and a value for the pressure in normalized units.
