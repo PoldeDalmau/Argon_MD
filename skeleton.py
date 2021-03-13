@@ -164,6 +164,20 @@ def pot_en(position): #position is the matrix with all the positions stored in i
     u = 4*(1/R**12 - 1/R**6)
     U = np.sum(u)
     return U
+
+#function to compute the pressure
+def pressure(position): #position is the matrix with all the positions stored in it
+    
+    r = atomic_distances(position[:,-3:], 0) #n x n simmetric matrix, r[i,j] is the distance between the i-th and the j-th particles
+    i = np.where(r == 0) # indices where the r matrix is 0
+    ones = np.zeros((n,n)) # nxn matrix
+    ones[i] = 1 # matrix with ones where r has zeros
+    R = r + ones  # same matrix as r, but with ones where r has zeros. we do this to avoid dividing by zero
+    tba_matrix = -12*((2*(1/R)**12)-((1/R)**6))
+    tba = np.sum(tba_matrix)
+    #rho = n/(L*L*L)
+    #P = (rho*119,8/T) - (rho/(3*n))*
+    return tba
     
     
 def simulate(algorithm):
@@ -190,6 +204,7 @@ def simulate(algorithm):
     Any quantities or observables that you wish to study.
     """
         
+
     #Create a 2x8 matrix to store the velocity of each particle at each step in time.
     next_step_velocity = np.copy(init_vel)
 
@@ -202,6 +217,8 @@ def simulate(algorithm):
     final_vector_kin = np.array([kin_en(init_vel)])
     final_vector_pot = np.array([pot_en(final_matrix_pos)])
     final_vector_energy = np.array([kin_en(init_vel) + pot_en(final_matrix_pos)])
+    
+    final_vector_tba = np.array([pressure(init_pos)])
     
     print("Init energy:" , final_vector_energy)
 
@@ -217,14 +234,21 @@ def simulate(algorithm):
         final_vector_pot = np.concatenate((final_vector_pot, np.array([pot_en(final_matrix_pos)])), axis=0, out=None)
         final_vector_energy = np.concatenate((final_vector_energy, np.array([kin_en(next_step_velocity) + pot_en(final_matrix_pos)])), axis=0, out=None)
         final_rel_dist = np.concatenate((final_rel_dist, atomic_distances(next_step_position, 0)), axis = 1, out = None)
+        final_vector_tba = np.concatenate((final_vector_tba, np.array([pressure(final_matrix_pos)])), axis = 0, out = None)
         
-        
-        window = 100
-        if i%window == 0 and abs(final_vector_energy[-1] - np.sum(final_vector_energy, initial=-10)/11) > 20 and number_of_steps/(window*j) < 0.8:
+        window = 200
+        if  i>0 and i<int(0.7*number_of_steps) and i%window == 0:
             j = j+1
             l = np.sqrt((3*(n-1)*T)/(2*final_vector_kin[-1]*119.8))
             final_matrix_vel = final_matrix_vel * l
     print(j)
+    
+    #i<int(0.7*number_of_steps) and abs(final_vector_energy[-1] - np.sum(final_vector_energy[-10:])/10) > 0.001*(np.sum(final_vector_energy[-10:])/10)
+    n_0 = int(0.7*number_of_steps)
+    #P = (1/(n-n_0))*np.sum(final_vector_tba[-n_0:])
+    rho = n/(L*L*L)
+    P = np.sum([rho*119,8/T , -(rho/(3*n))*(1/(n-n_0))*np.sum(final_vector_tba[-n_0:])])
+    print("P=", P)
 
     #print("Positions:\n" , final_matrix_pos)
     #print("Velocities:\n" , init_vel)
@@ -243,6 +267,7 @@ def simulate(algorithm):
     plt.xlabel("$t/(m\sigma^2/\epsilon)^{1/2}$")
     plt.ylabel("$E/\epsilon$")
     plt.show()
+    
 
 
 
