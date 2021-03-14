@@ -68,7 +68,18 @@ Please refer to the Week4 velocities and rescaling.ipynb (https://gitlab.kwant-p
 ## Week 5
 Pol: implemented the fcc_latice function
 Alberto and Matteo: worked on the boltmzann distribution of velocities and rescaling.
+Matteo: implemented error function
+Alberto: implemented pressure function
 The code works, but the results are not always reasonable. 
+We successfully implemented the Maxwell-Boltzmann distribution of velocities and plotted it (Figure 4 in figures folder).
+The fcc lattice function works and we successfully plotted it in 3-D (Figure 5 in figures folder).
+The pressure function works, but the resulting pressures are sometimes huge.
+
+The energies plot for 16 particles at 10K with 10000 timesteps of 0.001 is shown in figure 7. It is probably our best result so far.
+Figure 8 also shows the error and the energies for 100K while the other parametrs are the same as in figure 7. The pressure was 4.97 in dimensionless units.
+
+With the actual performance of our code we can run simulations with number of timesteps of the order of $10^4$ and a variable number of particles. The number of particles is the major factor in computing time. With a number of particles between 10 and 20 (and 10000 timesteps) it takes a few minutes for the entire simulation to run.
+
 
 Questions:
 - The total energy keeps oscillating along with the potential one, even for 2 particles. In some configurations, the potential and total energy keep getting smaller while the kinetic energy is almost zero. The potential energy is very negative, up to -140 for 16 particles in a 3x3x3 box. The initial potential energy in this case was already -128.  Even for two particles with zero initial velocity and without rescaling, the total energy oscillates with the potential (please see figure 1 in the folder for plot).

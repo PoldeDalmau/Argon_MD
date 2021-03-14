@@ -124,6 +124,24 @@ def fcc_lattice(a):
 
 
 def atomic_distances(pos, output): # output = 0 gives the relative distances, output = 1 gives the relative positions
+    """
+    Calculates relative positions and distances between particles.
+
+    parameters
+    pos : np.ndarray
+        The positions of the particles in cartesian space.
+    output: float
+        If output = 0 the function returns the relative distances between the particles.
+        If output = 1 the function returns the relative positions of the particles. 
+        If output is neither 1 or 0, an error message is printed.
+
+    returns
+    -------
+    r : np.ndarray
+        Relative distances between the particles.
+    rel_pos : np.ndarray
+        The relative positions of the particles.
+    """
     rel_pos = pos[:, None, :] - pos[None, :, :]                 # returns one matrix for each particle. Relative distances Lithin the box
     n = np.shape(rel_pos)[0] # number of particles
     for i in range(n):
@@ -145,6 +163,20 @@ def atomic_distances(pos, output): # output = 0 gives the relative distances, ou
 #compute the forces on the particles at each timestep
 
 def lj_force(position):
+    """
+    Calculates the net forces on each atom.
+
+    Parameters
+    ----------
+    position : np.ndarray
+        Relative particle positions as obtained from atomic_distances.
+    
+
+    Returns
+    -------
+    np.ndarray
+        The net force acting on particle i due to all other particles.
+    """
     rel_pos = atomic_distances(position[:,-3:], 1) # calculates the relative position of the particles, with pos = np.array(N_particels, 3)
     r = atomic_distances(position[:,-3:], 0) # n x n simmetric matrix, r[i,j] is the distance between the i-th and the j-th particles
     R = np.zeros((n,n,3))
@@ -185,14 +217,39 @@ def verlet(final_matrix_pos, final_matrix_vel):
 
 #function to compute the kinetic energy
 def kin_en(v): #v is the last step velocity
+    """
+    Computes the kinetic energy of an atomic system.
+
+    Parameters
+    ----------
+    v: np.ndarray
+        Velocity of particles at the latest timestep.
+
+    Returns
+    -------
+    float
+        The total kinetic energy of the system.
+    """
     K = 0.5*np.sum(v**2)
     return K
     
 #function to compute the potential energy
-def pot_en(position): #position is the matrix with all the positions stored in it
-    current_pos = np.copy(position[:,-3:]) #nx3 matrix with the positions at the last time step
-    rel_pos = atomic_distances(current_pos, 1) # with pos = np.array(n, 3)
-    r = atomic_distances(current_pos, 0) #n x n simmetric matrix, r[i,j] is the distance between the i-th and the j-th particles
+def pot_en(position): #position is the last step position of the particles
+    """
+    Computes the potential energy of an atomic system.
+
+    Parameters
+    ----------
+    position : np.ndarray
+        Particle positions as obtained from atomic_distances
+
+    Returns
+    -------
+    float
+        The total potential energy of the system.
+    """
+    rel_pos = atomic_distances(position, 1) # with pos = np.array(n, 3)
+    r = atomic_distances(position, 0) #n x n simmetric matrix, r[i,j] is the distance between the i-th and the j-th particles
     i = np.where(r == 0) # indices where the r matrix is 0
     ones = np.zeros((n,n)) # nxn matrix
     ones[i] = 1 # matrix with ones where r has zeros
@@ -212,7 +269,7 @@ def pressure(position): #position is the matrix with all the positions stored in
     tba_matrix = -12*((2*(1/R)**12)-((1/R)**6))
     tba = np.sum(tba_matrix)
     #rho = n/(L*L*L)
-    #P = (rho*119,8/T) - (rho/(3*n))*
+    #P = (rho*119.8/T) - (rho/(3*n))*
     return tba
     
     
@@ -251,10 +308,12 @@ def simulate(algorithm):
     final_matrix_vel = np.copy(init_vel)
     
     final_vector_kin = np.array([kin_en(init_vel)])
-    final_vector_pot = np.array([pot_en(final_matrix_pos)])
-    final_vector_energy = np.array([kin_en(init_vel) + pot_en(final_matrix_pos)])
+    final_vector_pot = np.array([pot_en(next_step_position)])
+    final_vector_energy = np.array([kin_en(init_vel) + pot_en(next_step_position)])
     
     final_vector_tba = np.array([pressure(init_pos)])
+    final_vector_press = np.copy([final_vector_tba[0]])
+    rho = n/(L*L*L)
     
     print("Init energy:" , final_vector_energy)
 
@@ -267,23 +326,22 @@ def simulate(algorithm):
         final_matrix_pos =  np.concatenate((final_matrix_pos, next_step_position), axis=1, out=None)
         final_matrix_vel =  np.concatenate((final_matrix_vel, next_step_velocity), axis=1, out=None)
         final_vector_kin = np.concatenate((final_vector_kin, np.array([kin_en(next_step_velocity)])), axis = 0, out = None)
-        final_vector_pot = np.concatenate((final_vector_pot, np.array([pot_en(final_matrix_pos)])), axis=0, out=None)
-        final_vector_energy = np.concatenate((final_vector_energy, np.array([kin_en(next_step_velocity) + pot_en(final_matrix_pos)])), axis=0, out=None)
+        final_vector_pot = np.concatenate((final_vector_pot, np.array([pot_en(next_step_position)])), axis=0, out=None)
+        final_vector_energy = np.concatenate((final_vector_energy, np.array([kin_en(next_step_velocity) + pot_en(next_step_position)])), axis=0, out=None)
         final_rel_dist = np.concatenate((final_rel_dist, atomic_distances(next_step_position, 0)), axis = 1, out = None)
         final_vector_tba = np.concatenate((final_vector_tba, np.array([pressure(final_matrix_pos)])), axis = 0, out = None)
+        final_vector_press = np.concatenate((final_vector_press, np.array([np.sum([rho*119.8/T , -(rho/(3*n))*final_vector_tba[i]])])))
         
         window = 200
-        if  i>0 and i<int(0.7*number_of_steps) and i%window == 0:
+        if  i>0 and i<int(0.7*number_of_steps) and i%window == 0 and abs(final_vector_energy[-1] - np.sum(final_vector_energy[-10:])/10) > 0.001*(np.sum(final_vector_energy[-10:])/10):
             j = j+1
             l = np.sqrt((3*(n-1)*T)/(2*final_vector_kin[-1]*119.8))
             final_matrix_vel = final_matrix_vel * l
     print(j)
     
-    #i<int(0.7*number_of_steps) and abs(final_vector_energy[-1] - np.sum(final_vector_energy[-10:])/10) > 0.001*(np.sum(final_vector_energy[-10:])/10)
     n_0 = int(0.7*number_of_steps)
     #P = (1/(n-n_0))*np.sum(final_vector_tba[-n_0:])
-    rho = n/(L*L*L)
-    P = np.sum([rho*119,8/T , -(rho/(3*n))*(1/(n-n_0))*np.sum(final_vector_tba[-n_0:])])
+    P = np.sum([rho*119.8/T , -(rho/(3*n))*(1/(number_of_steps-n_0))*np.sum(final_vector_tba[-n_0:])])
     print("P=", P)
 
     #print("Positions:\n" , final_matrix_pos)
@@ -304,6 +362,27 @@ def simulate(algorithm):
     plt.ylabel("$E/\epsilon$")
     plt.show()
     
+    #now we compute the error with the steps below
+    
+    b = 1
+    N = int(0.3*number_of_steps)
+    P = np.copy((final_vector_press[-n_0:]))
+    S_a = np.zeros((int(N/6), 1))
+    for b in range(1, int(N/6)):
+        Nb = int(N/b)
+        if Nb != 1:
+            p = np.zeros((Nb, 1))
+            for j in range(Nb):
+                for i in range(j*b,(j+1)*b):
+                    p[j] += (1/b)*P[i+np.floor_divide(j,b)]
+            S_a[b]=np.sqrt((1/(Nb-1))*(((1/Nb)*np.sum(np.square(p)))-np.square((1/Nb)*np.sum(p))))
+    
+    x = np.arange(0, len(S_a))
+    plt.plot(x, S_a)
+    plt.title("Error with data blocking")
+    plt.xlabel("b")
+    plt.ylabel("$\sigma_A$")
+
 
 
 
@@ -318,7 +397,7 @@ def simulate_empty(init_pos, init_vel, num_tsteps, timestep, box_dim): #argument
     """
     Molecular dynamics simulation using the Euler or Verlet's algorithms
     to integrate the equations of motion. Calculates energies and other
-    observables at each timestep. HELOOOOOO
+    observables at each timestep.
 
     Parameters
     ----------
@@ -344,118 +423,6 @@ def simulate_empty(init_pos, init_vel, num_tsteps, timestep, box_dim): #argument
 
 
 def atomic_distances_empty(pos, box_dim):
-    """
-    Calculates relative positions and distances between particles.
 
-    parameters
-    pos : np.ndarray
-        The positions of the particles in cartesian space
-    box_dim : float
-        The dimension of the simulation box
-
-    returns
-    -------
-    rel_pos : np.ndarray
-        Relative positions of particles
-    rel_dist : np.ndarray
-        The distance between particles
-    """
-
-    return
-
-
-def lj_force_empty(rel_pos, rel_dist):
-    """
-    Calculates the net forces on each atom.
-
-    Parameters
-    ----------
-    rel_pos : np.ndarray
-        Relative particle positions as obtained from atomic_distances
-    rel_dist : np.ndarray
-        Relative particle distances as obtained from atomic_distances
-
-    Returns
-    -------
-    np.ndarray
-        The net force acting on particle i due to all other particles
-    """
-
-    return
-
-
-def fcc_lattice_empty(num_atoms, lat_const):
-    
-    """
-    Initializes a system of atoms on an fcc lattice.
-
-    Parameters
-    ----------
-    num_atoms : int
-        The number of particles in the system
-    lattice_const : float
-        The lattice constant for an fcc lattice
-
-    Returns
-    -------
-    pos_vec : np.ndarray
-        Array of particle coordinates
-    """
-
-    return
-
-
-def kinetic_energy_empty(vel):
-    """
-    Computes the kinetic energy of an atomic system.
-
-    Parameters
-    ----------
-    vel: np.ndarray
-        Velocity of particle
-
-    Returns
-    -------
-    float
-        The total kinetic energy of the system.
-    """
-
-    return
-
-
-def potential_energy_empty(rel_dist):
-    """
-    Computes the potential energy of an atomic system.
-
-    Parameters
-    ----------
-    rel_dist : np.ndarray
-        Relative particle distances as obtained from atomic_distances
-
-    Returns
-    -------
-    float
-        The total potential energy of the system.
-    """
-
-    return
-
-
-def init_velocity_empty(num_atoms, temp):
-    """
-    Initializes the system with Gaussian distributed velocities.
-
-    Parameters
-    ----------
-    num_atoms : int
-        The number of particles in the system.
-    temp : float
-        The (unitless) temperature of the system.
-
-    Returns
-    -------
-    vel_vec : np.ndarray
-        Array of particle velocities
-    """
 
     return
