@@ -33,8 +33,8 @@ Alberto: Finish the function that stores each particle's velocity and position a
 and implement boundary condition
 Pol: Make a function that implements Euler's Method (input: velocities and positions up to timestep n, output: positions and velocities at most recent timestep n+1)
 
-Milestones: Positions, velocities and energy are correctly stored in their respective arrays (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week1_complete.ipynb#L385-387).
-The functions for the forces (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week1_complete.ipynb#L60-84), Euler method (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week1_complete.ipynb#L97-104) and energy (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week1_complete.ipynb#L114-142) have been implemented, but we are still missing the periodic boundary conditions, and need to figure out the forces so that they can actually make an impact on the system.
+Milestones: Positions, velocities and energy are correctly stored in their respective arrays [Skeleton lines 323-330](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L323-330).
+The functions for the forces [Skeleton lines 165-196](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L165-196), Euler method [Skeleton lines 200-206](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L200-206), kinetic energy [Skeleton lines 219-234](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L219-234) and potential energy [Skeleton lines 237-259](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L237-259) have been implemented, but we are still missing the periodic boundary conditions, and need to figure out the forces so that they can actually make an impact on the system.
 
 (due 14 February 2021, 23:59)
 
@@ -45,16 +45,16 @@ Matteo: Improve the forces function to get rid of for loops, as well as implemen
 Alberto: Improve the journal and plot the distances and energies
 Pol: Create the atomic_distances function and switch the code to 3D
 
-Milestones: we were able to implement the dimensionless units and compute the energy using the minimal image convention implemented in the atomic_distances function (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week2_complete.ipynb#L157-178) and we were able to plot the relative distances and the energies over time (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Plot%20of%20positions%20and%20energies%20-%20Week2.png). After a few steps, the relative distance reaches a minimum (close to zero) for which the kinetic energy becomes massive and the total energy is not conserved.
+Milestones: we were able to implement the dimensionless units and compute the energy using the minimal image convention implemented in the atomic_distances function [Skeleton lines 126-158](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L126-158) and we were able to plot the relative distances and the energies over time (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Plot%20of%20positions%20and%20energies%20-%20Week2.png). After a few steps, the relative distance reaches a minimum (close to zero) for which the kinetic energy becomes massive and the total energy is not conserved.
 Compared to week 1, we removed the majority of useless for loops and replaced them with numpy funcionalities, but some for loops are still there. 
-LJ forces without loops: https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Plot%20of%20positions%20and%20energies%20-%20Week2.png
-Energy without loops: kinetic (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week2_complete.ipynb#L228-231) and potential (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week2_complete.ipynb#L228-231)
+LJ forces without loops: [Skeleton lines 165-196](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L165-196)
+Energy without loops: kinetic [Skeleton lines 219-234](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L219-234) and potential [Skeleton lines 237-259](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L237-259)
 (due 21 February 2021, 23:59)
 
 
 ## Week 3
-Managed to correct errors with previous week's code (see Week2_complete.ipynb) and implement verlet method (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week3.ipynb#L187-194) for more than 2 particles (only tested for 3 particles thus far). Many of the for loops that slow down the code have not been removed. No attempt at structuring the code has been done this week.
-The functions calculating the potential energy (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week3.ipynb#L229-239) and the force (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week3.ipynb#L146-165) were promoted to n-particles.
+Managed to correct errors with previous week's code (see Week2_complete.ipynb) and implement verlet method [Skeleton lines 208-215](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L208-215) for more than 2 particles (only tested for 3 particles thus far). Many of the for loops that slow down the code have not been removed. No attempt at structuring the code has been done this week.
+The functions calculating the potential energy [Skeleton lines 237-259](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L237-259) and the force [Skeleton lines 165-196](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L165-196) were promoted to n-particles.
 
 
 (due 28 February 2021, 23:59)
@@ -62,21 +62,25 @@ The functions calculating the potential energy (https://gitlab.kwant-project.org
 
 ## Week 4
 Please refer to the Week4 velocities and rescaling.ipynb (https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/Week4%20velocities%20and%20rescaling.ipynb#L361) to see a successful implementation of the rescaling. The fcc lattice and appropriate velocity initializations are still in progress.
+
+Edit: this week we were not able to work on the code properly due to other obligations.
 (due 7 March 2021, 23:59)
 
 
 ## Week 5
-Pol: implemented the fcc_latice function
-Alberto and Matteo: worked on the boltmzann distribution of velocities and rescaling.
-Matteo: implemented error function
-Alberto: implemented pressure function
-The code works, but the results are not always reasonable. 
-We successfully implemented the Maxwell-Boltzmann distribution of velocities and plotted it (Figure 4 in figures folder).
-The fcc lattice function works and we successfully plotted it in 3-D (Figure 5 in figures folder).
-The pressure function works, but the resulting pressures are sometimes huge.
+Pol: implemented the fcc_latice function.
+Alberto and Matteo: worked on the Maxwell-Boltmzann distribution of velocities and rescaling.
+Matteo: implemented error function.
+Alberto: implemented pressure function and restructured the code.
+The code works, is now structured in a better way and each function has its description, but the results are not always reasonable. 
+We successfully implemented the Maxwell-Boltzmann distribution of velocities [Skeleton lines 15-16](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L15-16) and plotted it [Skeleton lines 24-27](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L24-27) (Figure 4 in figures folder). 
+The fcc lattice function works and we successfully plotted it in 3-D (Figure 5 in figures folder). [Skeleton lines 29-123](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L29-123)
+The pressure function works, but the resulting pressures are sometimes huge. [Skeleton lines 262-273](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L262-273) gives the value that will be averaged, while in the simulate function [Skeleton lines 342-345](https://gitlab.kwant-project.org/computational_physics/projects/Project-1_albertogori_compphys_bot_matteodeluca_pdedalmauhugue/-/blob/master/skeleton.py#L342-345) we compute the pressure averaging.
 
 The energies plot for 16 particles at 10K with 10000 timesteps of 0.001 is shown in figure 7. It is probably our best result so far.
 Figure 8 also shows the error and the energies for 100K while the other parametrs are the same as in figure 7. The pressure was 4.97 in dimensionless units.
+
+To valide our simulation, we will compute the pressure and compare it to literature values. Also, simulating the code with certain initial values for the temparature could give us information on eventual changes of state. 
 
 With the actual performance of our code we can run simulations with number of timesteps of the order of $10^4$ and a variable number of particles. The number of particles is the major factor in computing time. With a number of particles between 10 and 20 (and 10000 timesteps) it takes a few minutes for the entire simulation to run.
 
