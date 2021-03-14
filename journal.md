@@ -66,4 +66,12 @@ Please refer to the Week4 velocities and rescaling.ipynb (https://gitlab.kwant-p
 
 
 ## Week 5
+Pol: implemented the fcc_latice function
+Alberto and Matteo: worked on the boltmzann distribution of velocities and rescaling.
+The code works, but the results are not always reasonable. 
+
+Questions:
+- The total energy keeps oscillating along with the potential one, even for 2 particles. In some configurations, the potential and total energy keep getting smaller while the kinetic energy is almost zero. The potential energy is very negative, up to -140 for 16 particles in a 3x3x3 box. The initial potential energy in this case was already -128.  Even for two particles with zero initial velocity and without rescaling, the total energy oscillates with the potential (please see figure 1 in the folder for plot).
+- Pressure is huge even for big boxes compared to the number of particles. For 16 particles with a 3x3x3 box at 10K (0.0001 time step duration, 10000 time steps) the pressure is 63.25 in dimensionless units, which is around 26000 bars, definitely too big (plot is in figure 2 inside the folder). To switch from dimensionless units to SI units for pressure, we multiplied by $(\sigma^3)/\epsilon$ .
+- Rescaling works, but we are not sure that it is correct (please see figure folder for plots).
 (due 14 March 2021, 23:59)
