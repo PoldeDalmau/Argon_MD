@@ -142,10 +142,7 @@ def atomic_distances(pos, output): # output = 0 gives the relative distances, ou
     """
     rel_pos = pos[:, None, :] - pos[None, :, :]                 # returns one matrix for each particle. Relative distances Lithin the box
     n = np.shape(rel_pos)[0] # number of particles
-    for i in range(n):
-        for k in range(n):
-            for l in range(3):
-                rel_pos[i,k,l] = min(rel_pos[i,k,l], rel_pos[i,k,l]+L, rel_pos[i,k,l]-L, key=abs) # takes the smallest distance comparing all images             
+    rel_pos = ((rel_pos + L/2) % L) - L/2              
     r = np.sqrt(np.sum((rel_pos)**2, axis=2)) # n x n simmetric matrix, r[i,j] is the distance between the i-th and the j-th particles
     
     if output == 0:
