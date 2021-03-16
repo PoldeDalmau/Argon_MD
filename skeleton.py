@@ -423,9 +423,3 @@ def simulate_empty(init_pos, init_vel, num_tsteps, timestep, box_dim): #argument
     
     
     return 
-
-
-def atomic_distances_empty(pos, box_dim):
-
-
-    return
