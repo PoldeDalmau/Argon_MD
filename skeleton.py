@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 #time_step = 1e-3
 #m =  6.6335 * pow(10, -26) #mass of argon atom in kg
 #number_of_steps = 10000
+T = 1.5 #initial temperature of the system
 times = np.arange(0,(number_of_steps + 1) * time_step, time_step)
 #test for Boltzmann distribution. Must be run with at least 1000 particles
 #v_norm = np.linalg.norm(init_vel, axis=1)
@@ -326,22 +327,25 @@ def simulate(algorithm, rescaling_bool, pressure_bool, error_bool):
         final_vector_energy = np.concatenate((final_vector_energy, np.array([kin_en(next_step_velocity) + pot_en(next_step_position)])), axis=0, out=None)
         final_rel_dist = np.concatenate((final_rel_dist, atomic_distances(next_step_position, 0)), axis = 1, out = None)
         if pressure_bool == True:
+            T = 2*kin_en(final_matrix_vel[:,-3:])/(3*(n-1)*119.8)
             final_vector_tba = np.concatenate((final_vector_tba, np.array([pressure(final_matrix_pos)])), axis = 0, out = None)
             final_vector_press = np.concatenate((final_vector_press, np.array([np.sum([rho*119.8/T , -(rho/(3*n))*final_vector_tba[i]])])))
         
         #Rescaling:
         if rescaling_bool ==True:
             window = 200
-            if  i>0 and i<int(0.7*number_of_steps) and i%window == 0 and abs(final_vector_energy[-1] - np.sum(final_vector_energy[-10:])/10) > 0.001*(np.sum(final_vector_energy[-10:])/10):
+            if  i>0 and i<int(0.7*number_of_steps) and i%window == 0 and abs(final_vector_energy[-1] - np.sum(final_vector_energy[-10:])/10) > 0.01*(np.sum(final_vector_energy[-10:])/10):
                 j = j+1
                 l = np.sqrt((3*(n-1)*T)/(2*final_vector_kin[-1]*119.8))
                 final_matrix_vel = final_matrix_vel * l
+                #T = 2*kin_en(final_matrix_vel[:,-3:])/(3*(n-1)*119.8)
+                print("T = ", T)
     print("Number of rescalings: ", j)
     # Compute pressure:
     if pressure_bool == True:
         n_0 = int(0.7*number_of_steps)
         #P = (1/(n-n_0))*np.sum(final_vector_tba[-n_0:])
-        P = np.sum([rho*119.8/T , -(rho/(3*n))*(1/(number_of_steps-n_0))*np.sum(final_vector_tba[-n_0:])])
+        P = np.sum([1 , -(T/119.8*(3*n))*(1/(number_of_steps-n_0))*np.sum(final_vector_tba[-n_0:])])
         print("P=", P)
 
     #print("Positions:\n" , final_matrix_pos)
