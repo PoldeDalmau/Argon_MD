@@ -271,7 +271,7 @@ def pressure(position): #position is the matrix with all the positions stored in
     return tba
     
     
-def simulate(algorithm, rescaling, pressure, error):
+def simulate(algorithm, rescaling_bool, pressure_bool, error_bool):
     """
     Molecular dynamics simulation using the Euler or Verlet's algorithms
     to integrate the equations of motion. Calculates energies and other
@@ -309,7 +309,7 @@ def simulate(algorithm, rescaling, pressure, error):
     final_vector_pot = np.array([pot_en(next_step_position)])
     final_vector_energy = np.array([kin_en(init_vel) + pot_en(next_step_position)])
     
-    if pressure == True:
+    if pressure_bool == True:
         final_vector_tba = np.array([pressure(init_pos)])
         final_vector_press = np.copy([final_vector_tba[0]])
         rho = n/(L*L*L)
@@ -328,20 +328,20 @@ def simulate(algorithm, rescaling, pressure, error):
         final_vector_pot = np.concatenate((final_vector_pot, np.array([pot_en(next_step_position)])), axis=0, out=None)
         final_vector_energy = np.concatenate((final_vector_energy, np.array([kin_en(next_step_velocity) + pot_en(next_step_position)])), axis=0, out=None)
         final_rel_dist = np.concatenate((final_rel_dist, atomic_distances(next_step_position, 0)), axis = 1, out = None)
-        if pressure == True:
+        if pressure_bool == True:
             final_vector_tba = np.concatenate((final_vector_tba, np.array([pressure(final_matrix_pos)])), axis = 0, out = None)
             final_vector_press = np.concatenate((final_vector_press, np.array([np.sum([rho*119.8/T , -(rho/(3*n))*final_vector_tba[i]])])))
         
         #Rescaling:
-        if rescaling ==True:
+        if rescaling_bool ==True:
             window = 200
             if  i>0 and i<int(0.7*number_of_steps) and i%window == 0 and abs(final_vector_energy[-1] - np.sum(final_vector_energy[-10:])/10) > 0.001*(np.sum(final_vector_energy[-10:])/10):
                 j = j+1
                 l = np.sqrt((3*(n-1)*T)/(2*final_vector_kin[-1]*119.8))
                 final_matrix_vel = final_matrix_vel * l
-            print(j)
+    print("Number of rescalings: ", j)
     # Compute pressure:
-    if pressure == True:
+    if pressure_bool == True:
         n_0 = int(0.7*number_of_steps)
         #P = (1/(n-n_0))*np.sum(final_vector_tba[-n_0:])
         P = np.sum([rho*119.8/T , -(rho/(3*n))*(1/(number_of_steps-n_0))*np.sum(final_vector_tba[-n_0:])])
@@ -366,7 +366,7 @@ def simulate(algorithm, rescaling, pressure, error):
     plt.show()
     
     #now we compute the error with the steps below
-    if error == True:
+    if error_bool == True:
         b = 1
         N = int(0.3*number_of_steps)
         P = np.copy((final_vector_press[-n_0:]))
