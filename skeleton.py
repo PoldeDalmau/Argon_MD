@@ -19,8 +19,7 @@ import matplotlib.pyplot as plt
 #time_step = 1e-3
 #m =  6.6335 * pow(10, -26) #mass of argon atom in kg
 #number_of_steps = 10000
-#times = np.arange(0,(number_of_steps + 1) * time_step, time_step)
-
+times = np.arange(0,(number_of_steps + 1) * time_step, time_step)
 #test for Boltzmann distribution. Must be run with at least 1000 particles
 #v_norm = np.linalg.norm(init_vel, axis=1)
 #plt.hist(v_norm, 20)
@@ -64,8 +63,6 @@ def fcc_lattice(a):
 
     Parameters
     ----------
-    n : int
-        The number of particles in the system
     a : float
         The lattice constant for an fcc lattice.
 
@@ -73,53 +70,54 @@ def fcc_lattice(a):
     -------
     init_pos : np.ndarray
         Array of particle coordinates
-        
-    note: number of cells= (L/a)^3, 
-          number of particles that we get: number of cells * 2
     """
     square_xy = np.array([[0, 0, 0], [a, 0, 0], [a, a, 0],[0, a, 0]])
     alongx = np.copy(square_xy)
     # This will begin to put squares one next to another 
     # along the x-axis. Distance between squares must be 2a
-    multiples = np.arange(2, L, 2*a)
-    multiples = np.reshape(multiples, (len(multiples),1))
-    multiples_x = a*multiples*np.array([1, 0, 0])
-    multiples_y = a*multiples*np.array([0, 1, 0])
-    multiples_z = a*multiples * np.array([0, 0, 1])
+    multiples = np.arange(0, L, 2*a)
+    multiples_top = np.arange(0, L, a)
     
-    # copy the square on the x-axis
-    for i in range(len(multiples)):
+    multiples = np.reshape(multiples, (len(multiples),1))
+    multiples_top = np.reshape(multiples_top, (len(multiples_top),1))
+    
+    multiples_x = multiples*np.array([1, 0, 0])
+    multiples_y = multiples*np.array([0, 1, 0])
+    multiples_z = multiples_top * np.array([0, 0, 1])
+    
+    for i in range(1, len(multiples)):
         to_add = multiples_x[i] + square_xy
-        alongx = np.concatenate((alongx,to_add), axis = 0)          
+        alongx = np.concatenate((alongx,to_add), axis = 0) 
     alongx = cleaner(alongx, "less")
     
-    #copy the line of squares to span the xy-plane
-    xy_plane = alongx
-    for i in range(len(multiples)):
+
+    xy_plane = alongx  
+    for i in range(1, len(multiples)):
         to_add1 = multiples_y[i] + alongx
         xy_plane = np.concatenate((xy_plane,to_add1), axis = 0)
     xy_plane = cleaner(xy_plane, "less")
     
-    #copy the plane to span the entire volume. Now you have a simple cubic lattice
     sc_lattice = xy_plane
-    for i in range(len(multiples)):                                 
+    for i in range(1, len(multiples_top)):                                 
         to_add2 = multiples_z[i] + xy_plane
         sc_lattice = np.concatenate((sc_lattice,to_add2), axis = 0)
     sc_lattice = cleaner(sc_lattice, "less")
-    
-    # an fcc is equivalent to four simple cubic lattices,
+
+# an fcc is equivalent to four simple cubic lattices,
     sc_1 = np.copy(sc_lattice) + a/2*np.array([1,1,0])                         #   one with a(1/2,1/2,0) offset, 
     sc_2 = np.copy(sc_lattice) + a/2*np.array([0,1,1])                         #   one with a(0,1/2,1/2) offset,              
     sc_3 = np.copy(sc_lattice) + a/2*np.array([1,0,1])                         #   and one with a(1/2,0,1/2) offset           
     fcc_positions = np.concatenate((sc_lattice, sc_1, sc_2, sc_3), axis = 0)
     
-    fcc_positions = cleaner(fcc_positions, "very")
+    
     fcc_positions = np.concatenate((fcc_positions, fcc_positions + L/2 * np.array([0, 0, 1])), axis = 0)     # corrects the fact we were only making half the particles we were supposed to
-    max_n = len(fcc_positions)
-    num_cells = max_n / 4
+    fcc_positions = cleaner(fcc_positions, "very")
+    max_n = int((L/a)**3 * 4)            #Theoretical maximum of particles
     if n > max_n:
         print("You wanted %i particles, but only %i particles can actually fit here!" % (n, max_n))
-    fcc_positions = fcc_positions[:n,:] #picks n particles out of all, 
+        fcc_positions = fcc_positions[:max_n,:] #picks n particles out of all, 
+   
+    fcc_positions = fcc_positions[:n,:]  #picks n particles out of all,     
     return (fcc_positions)
 
 
@@ -191,7 +189,7 @@ def lj_force(position):
     # in addition, R_i[i,k] (i-th line of the i-th matrix) is equal to 1 instead of 0 in order not to divide by 0 in the computation of F
     # we can do this since rel_pos_i[i,k] multiplies everything in F and is equal to 0
     F = np.zeros((n,n,3))
-    F = -24*rel_pos*((2*(1/R)**12)-((1/R)**6))
+    F = -24*rel_pos*((2*(1/R)**12)-((1/R)**6)) 
     F_matrix = np.sum(F, axis=0)  
     return F_matrix # The output is an nx3 matrix
     
@@ -254,7 +252,7 @@ def pot_en(position): #position is the last step position of the particles
     ones = np.zeros((n,n)) # nxn matrix
     ones[i] = 1 # matrix with ones where r has zeros
     R = r + ones  # same matrix as r, but with ones where r has zeros. we do this to avoid dividing by zero
-    u = 4*(1/R**12 - 1/R**6)
+    u = 1/2*4*(1/R**12 - 1/R**6) # factor 1/2 to compensate for double counting
     U = np.sum(u)
     return U
 
@@ -273,7 +271,7 @@ def pressure(position): #position is the matrix with all the positions stored in
     return tba
     
     
-def simulate(algorithm):
+def simulate(algorithm, rescaling, pressure, error):
     """
     Molecular dynamics simulation using the Euler or Verlet's algorithms
     to integrate the equations of motion. Calculates energies and other
@@ -311,11 +309,12 @@ def simulate(algorithm):
     final_vector_pot = np.array([pot_en(next_step_position)])
     final_vector_energy = np.array([kin_en(init_vel) + pot_en(next_step_position)])
     
-    final_vector_tba = np.array([pressure(init_pos)])
-    final_vector_press = np.copy([final_vector_tba[0]])
-    rho = n/(L*L*L)
+    if pressure == True:
+        final_vector_tba = np.array([pressure(init_pos)])
+        final_vector_press = np.copy([final_vector_tba[0]])
+        rho = n/(L*L*L)
     
-    print("Init energy:" , final_vector_energy)
+    #print("Init energy:" , final_vector_energy)
 
     final_rel_dist = atomic_distances(init_pos, 0)
     j = 0
@@ -329,20 +328,24 @@ def simulate(algorithm):
         final_vector_pot = np.concatenate((final_vector_pot, np.array([pot_en(next_step_position)])), axis=0, out=None)
         final_vector_energy = np.concatenate((final_vector_energy, np.array([kin_en(next_step_velocity) + pot_en(next_step_position)])), axis=0, out=None)
         final_rel_dist = np.concatenate((final_rel_dist, atomic_distances(next_step_position, 0)), axis = 1, out = None)
-        final_vector_tba = np.concatenate((final_vector_tba, np.array([pressure(final_matrix_pos)])), axis = 0, out = None)
-        final_vector_press = np.concatenate((final_vector_press, np.array([np.sum([rho*119.8/T , -(rho/(3*n))*final_vector_tba[i]])])))
+        if pressure == True:
+            final_vector_tba = np.concatenate((final_vector_tba, np.array([pressure(final_matrix_pos)])), axis = 0, out = None)
+            final_vector_press = np.concatenate((final_vector_press, np.array([np.sum([rho*119.8/T , -(rho/(3*n))*final_vector_tba[i]])])))
         
-        window = 200
-        if  i>0 and i<int(0.7*number_of_steps) and i%window == 0 and abs(final_vector_energy[-1] - np.sum(final_vector_energy[-10:])/10) > 0.001*(np.sum(final_vector_energy[-10:])/10):
-            j = j+1
-            l = np.sqrt((3*(n-1)*T)/(2*final_vector_kin[-1]*119.8))
-            final_matrix_vel = final_matrix_vel * l
-    print(j)
-    
-    n_0 = int(0.7*number_of_steps)
-    #P = (1/(n-n_0))*np.sum(final_vector_tba[-n_0:])
-    P = np.sum([rho*119.8/T , -(rho/(3*n))*(1/(number_of_steps-n_0))*np.sum(final_vector_tba[-n_0:])])
-    print("P=", P)
+        #Rescaling:
+        if rescaling ==True:
+            window = 200
+            if  i>0 and i<int(0.7*number_of_steps) and i%window == 0 and abs(final_vector_energy[-1] - np.sum(final_vector_energy[-10:])/10) > 0.001*(np.sum(final_vector_energy[-10:])/10):
+                j = j+1
+                l = np.sqrt((3*(n-1)*T)/(2*final_vector_kin[-1]*119.8))
+                final_matrix_vel = final_matrix_vel * l
+            print(j)
+    # Compute pressure:
+    if pressure == True:
+        n_0 = int(0.7*number_of_steps)
+        #P = (1/(n-n_0))*np.sum(final_vector_tba[-n_0:])
+        P = np.sum([rho*119.8/T , -(rho/(3*n))*(1/(number_of_steps-n_0))*np.sum(final_vector_tba[-n_0:])])
+        print("P=", P)
 
     #print("Positions:\n" , final_matrix_pos)
     #print("Velocities:\n" , init_vel)
@@ -363,25 +366,25 @@ def simulate(algorithm):
     plt.show()
     
     #now we compute the error with the steps below
-    
-    b = 1
-    N = int(0.3*number_of_steps)
-    P = np.copy((final_vector_press[-n_0:]))
-    S_a = np.zeros((int(N/6), 1))
-    for b in range(1, int(N/6)):
-        Nb = int(N/b)
-        if Nb != 1:
-            p = np.zeros((Nb, 1))
-            for j in range(Nb):
-                for i in range(j*b,(j+1)*b):
-                    p[j] += (1/b)*P[i+np.floor_divide(j,b)]
-            S_a[b]=np.sqrt((1/(Nb-1))*(((1/Nb)*np.sum(np.square(p)))-np.square((1/Nb)*np.sum(p))))
-    
-    x = np.arange(0, len(S_a))
-    plt.plot(x, S_a)
-    plt.title("Error with data blocking")
-    plt.xlabel("b")
-    plt.ylabel("$\sigma_A$")
+    if error == True:
+        b = 1
+        N = int(0.3*number_of_steps)
+        P = np.copy((final_vector_press[-n_0:]))
+        S_a = np.zeros((int(N/6), 1))
+        for b in range(1, int(N/6)):
+            Nb = int(N/b)
+            if Nb != 1:
+                p = np.zeros((Nb, 1))
+                for j in range(Nb):
+                    for i in range(j*b,(j+1)*b):
+                        p[j] += (1/b)*P[i+np.floor_divide(j,b)]
+                S_a[b]=np.sqrt((1/(Nb-1))*(((1/Nb)*np.sum(np.square(p)))-np.square((1/Nb)*np.sum(p))))
+
+        x = np.arange(0, len(S_a))
+        plt.plot(x, S_a)
+        plt.title("Error with data blocking")
+        plt.xlabel("b")
+        plt.ylabel("$\sigma_A$")
 
 
 
