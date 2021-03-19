@@ -171,13 +171,11 @@ def lj_force(position):
     """
     rel_pos = atomic_distances(position[:,-3:], 1) # calculates the relative position of the particles, with pos = np.array(N_particels, 3)
     r = atomic_distances(position[:,-3:], 0) # n x n simmetric matrix, r[i,j] is the distance between the i-th and the j-th particles
-    R = np.zeros((n,n,3))
-    for i in range(n):
-        for j in range (n):
-            for k in range (3):
-                R[i,j,k] = r [i,j]
-                if r[i,j] == 0:
-                    R[i,j,k] = np.inf
+    zeros = np.zeros((n,n))
+    np.fill_diagonal(zeros, np.inf)         # nxn diagonal matrix with np.inf on the diagonal
+    r = r + zeros
+    temp = np.reshape(r, (n,n,1))           # temporary array to build R in the right shape (n,n,3)
+    R = np.concatenate((temp, temp, temp), axis=2)
     # R are n matricies in the form nx3, where the i-th matrix contains the distances from the i-th particle, calling R_i the i-th matrix, 
     # R_i[j,k] gives the distance between the i-th and the j-th particles and is the same value for all the 'k in range(3)', i.e. on all the j-th line
     # in addition, R_i[i,k] (i-th line of the i-th matrix) is equal to 1 instead of 0 in order not to divide by 0 in the computation of F
@@ -186,7 +184,6 @@ def lj_force(position):
     F = -24*rel_pos*((2*(1/R)**12)-((1/R)**6)) 
     F_matrix = np.sum(F, axis=0)  
     return F_matrix # The output is an nx3 matrix
-    
     
     
 def euler(final_matrix_pos, final_matrix_vel):
@@ -263,13 +260,17 @@ def pair_correlation(rel_dist, dr):
     Fills a histogram.
         
     """
+    #rel_dist = np.reshape(rel_dist, (n*n))
+    #bins_list = np.arange(0, L+dr, dr)
+    #num, bins, patches = plt.hist(rel_dist, bins = bins_list)
+    #plt.clf()
+    #num_true = np.copy(num)/2
     rel_dist = np.reshape(rel_dist, (n*n))
-    bins_list = np.arange(0, L+dr, dr)
-    num, bins, patches = plt.hist(rel_dist, bins = bins_list)
-    plt.clf()
-    num_true = np.copy(num)/2
-
-    return num_true
+    bins_list = np.arange(dr, L+dr, dr)
+    counts = pd.cut(rel_dist, bins_list, include_lowest = True)
+    counts= counts.value_counts()
+    counts = counts.to_numpy()
+    return counts/2 #avoids double counting
     
     
     
@@ -314,7 +315,7 @@ def simulate(algorithm, rescaling_bool, pressure_bool, error_bool, pair_correlat
     Any quantities or observables that you wish to study.
     """
         
-    
+    n_0 = int(0.7*number_of_steps)
     #Create a 2x8 matrix to store the velocity of each particle at each step in time.
     next_step_velocity = np.copy(init_vel)
 
@@ -370,12 +371,11 @@ def simulate(algorithm, rescaling_bool, pressure_bool, error_bool, pair_correlat
     print("Number of rescalings: ", j)
     # Compute pressure:
     if pressure_bool == True:
-        n_0 = int(0.7*number_of_steps)
         #P = (1/(n-n_0))*np.sum(final_vector_tba[-n_0:])
         P = np.sum([rho*119.8/T , -(rho/(3*n))*(1/(number_of_steps-n_0))*np.sum(final_vector_tba[-n_0:])])
         print("P=", P)
     if pair_correlation_bool:
-        final_vector_corr = final_vector_corr / number_of_steps     # number_of_steps should become
+        final_vector_corr = final_vector_corr / number_of_steps     # number_of_steps should become n_0
     #print("Positions:\n" , final_matrix_pos)
     #print("Velocities:\n" , init_vel)
     #print("Energy:\n" , final_vector_pot)
@@ -388,7 +388,7 @@ def plot_energy(potential, kinetic, total):
     print("")
     plt.plot(times, total, label = "Total")
     plt.plot(times, kinetic, label = "Kinetic")
-    plt.plot(times, potential, label = "Potential")
+    plt.plot(times, -potential, label = "Potential")
     plt.legend()
     plt.title("Energy over time")
     plt.xlabel("$t/(m\sigma^2/\epsilon)^{1/2}$")
