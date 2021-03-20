@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 #time_step = 1e-3
 #m =  6.6335 * pow(10, -26) #mass of argon atom in kg
 #number_of_steps = 10000
-T = 1.5 #initial temperature of the system
+#T = 1.5 #initial temperature of the system
 times = np.arange(0,(number_of_steps + 1) * time_step, time_step)
 #test for Boltzmann distribution. Must be run with at least 1000 particles
 #v_norm = np.linalg.norm(init_vel, axis=1)
@@ -56,7 +56,7 @@ def cleaner(init_pos, strict, box_size = L):
     return (init_pos)
     #return "unit_sc", unit_sc.shape, "unit_sc_1",  unit_sc_1.shape, "init_pos", init_pos.shape
     #return "unit_sc", unit_sc, "unit_sc_1",  unit_sc_1, "init_pos", init_pos
-    
+
 def fcc_lattice(a):
     
     """
@@ -121,7 +121,7 @@ def fcc_lattice(a):
     fcc_positions = fcc_positions[:n,:]  #picks n particles out of all,     
     return (fcc_positions)
 
-def init_velocity(T, n):
+def init_velocity():
     """
     Initializes the initial velocities of the particles.
     
@@ -142,6 +142,36 @@ def init_velocity(T, n):
     #init_vel = init_vel - np.mean(init_vel, axis=0)
     
     return init_vel
+
+def atomic_distances_old(pos, output): # output = 0 gives the relative distances, output = 1 gives the relative positions
+    rel_pos = pos[:, None, :] - pos[None, :, :]                 # returns one matrix for each particle. Relative distances Lithin the box
+    n = np.shape(rel_pos)[0] # number of particles
+    for i in range(n):
+        for k in range(n):
+            for l in range(3):
+                rel_pos[i,k,l] = min(rel_pos[i,k,l], rel_pos[i,k,l]+L, rel_pos[i,k,l]-L, key=abs) # takes the smallest distance comparing all images             
+    r = np.sqrt(np.sum((rel_pos)**2, axis=2)) # n x n simmetric matrix, r[i,j] is the distance between the i-th and the j-th particles
+
+    
+    if output == 0:
+        return r
+    elif output == 1:
+        return rel_pos
+    else:
+        print("The second parameter in the atomic_distances must be either 0(for distances) or 1(for positions)")
+        
+def atomic_distances_less_old(pos, output):
+    rel_pos = pos[:, None, :] - pos[None, :, :]                 # returns one matrix for each particle. Relative distances Lithin the box
+    rel_pos = ((rel_pos + L/2) % L) - L/2 
+    r = np.sqrt(np.sum((rel_pos)**2, axis=2)) # n x n simmetric matrix, r[i,j] is the distance between the i-th and the j-th particles
+
+
+    if output == 0:
+        return r
+    elif output == 1:
+        return rel_pos
+    else:
+        print("The second parameter in the atomic_distances must be either 0(for distances) or 1(for positions)")
 
 
 def atomic_distances(pos, output): # output = 0 gives the relative distances, output = 1 gives the relative positions
@@ -164,21 +194,23 @@ def atomic_distances(pos, output): # output = 0 gives the relative distances, ou
         The relative positions of the particles.
     """
     rel_pos = pos[:, None, :] - pos[None, :, :]                 # returns one matrix for each particle. Relative distances Lithin the box
-    n = np.shape(rel_pos)[0] # number of particles
-    rel_pos = ((rel_pos + L/2) % L) - L/2              
+    rel_pos += L*(rel_pos<-L/2) - L*(rel_pos>L/2)
     r = np.sqrt(np.sum((rel_pos)**2, axis=2)) # n x n simmetric matrix, r[i,j] is the distance between the i-th and the j-th particles
     
     if output == 0:
+        #print(r)
         return r
     elif output == 1:
+        #print(rel_pos)
         return rel_pos
     else:
         print("The second parameter in the atomic_distances must be either 0(for distances) or 1(for positions)")
         
-        
-        
-        
-#compute the forces on the particles at each timestep
+
+
+
+
+# compute the forces on the particles at each timestep
 
 def lj_force(rel_pos, r):
     """
@@ -212,9 +244,9 @@ def lj_force(rel_pos, r):
     F = -24*rel_pos*((2*(1/R)**12)-((1/R)**6)) 
     F_matrix = np.sum(F, axis=0)  
     return F_matrix # The output is an nx3 matrix
+
     
-    
-    
+
 def euler(latest_pos, latest_vel, rel_pos, rel_dist):
     """
     Updates the positions of each particle at each timestep using Euler algorithm.
@@ -259,7 +291,7 @@ def verlet(latest_pos, latest_vel, rel_pos, rel_dist):
     #latest_vel = np.copy(final_matrix_vel[:,-3:])
     
     new_latest_pos = latest_pos + time_step * latest_vel + (1/2) * time_step**2  * lj_force(rel_pos, rel_dist)
-    new_latest_vel = latest_vel + (time_step/2) * (lj_force(rel_pos, rel_dist) + lj_force(rel_pos, rel_dist))
+    new_latest_vel = latest_vel + (time_step/2) * (lj_force(rel_pos, rel_dist) + lj_force(atomic_distances(new_latest_pos, 1), atomic_distances(new_latest_pos, 0)))
     return new_latest_pos, new_latest_vel
 
 
@@ -280,7 +312,7 @@ def kin_en(v): #v is the last step velocity
     """
     K = 0.5*np.sum(v**2)
     return K
-    
+
 #function to compute the potential energy
 def pot_en(r): #position is the last step position of the particles
     """
@@ -302,7 +334,7 @@ def pot_en(r): #position is the last step position of the particles
     ones = np.zeros((n,n)) # nxn matrix
     ones[i] = 1 # matrix with ones where r has zeros
     R = r + ones  # same matrix as r, but with ones where r has zeros. we do this to avoid dividing by zero
-    u = 4*(1/R**12 - 1/R**6) # factor 1/2 to compensate for double counting
+    u = 1/2*4*(1/R**12 - 1/R**6) # factor 1/2 to compensate for double counting
     U = np.sum(u)
     return U
 
@@ -352,9 +384,9 @@ def pair_correlation(rel_dist, dr):
     counts= counts.value_counts()
     counts = counts.to_numpy()
     return counts/2 #avoids double counting
-    
-    
-def simulate(algorithm, rescaling_bool, pressure_bool, error_bool, pair_correlation_bool):
+
+
+def simulate(algorithm, T, rescaling_bool, pressure_bool, error_bool, pair_correlation_bool):
     """
     Molecular dynamics simulation using the Euler or Verlet's algorithms
     to integrate the equations of motion. Calculates energies and other
@@ -378,20 +410,20 @@ def simulate(algorithm, rescaling_bool, pressure_bool, error_bool, pair_correlat
     Any quantities or observables that you wish to study.
     """
         
-    T = 1.35
+    #T = 1.35
     #Create a nx3 matrix to store the velocity of each particle at each step in time.
-    next_step_velocity = np.copy(init_velocity(T, n))
+    next_step_velocity = np.copy(init_velocity())
 
     #Create a nx3 matrix to store the position of each particle at each step in time.
     next_step_position = np.copy(init_pos)
     
     final_matrix_pos = np.copy(init_pos)
-    final_matrix_vel = np.copy(init_velocity(T, n))
+    final_matrix_vel = np.copy(init_velocity())
     
     rel_dist = atomic_distances(init_pos, 0)
-    final_vector_kin = np.array([kin_en(init_velocity(T, n))])
+    final_vector_kin = np.array([kin_en(init_velocity())])
     final_vector_pot = np.array([pot_en(rel_dist)])
-    final_vector_energy = np.array([kin_en(init_velocity(T, n)) + pot_en(rel_dist)])
+    final_vector_energy = np.array([kin_en(init_velocity()) + pot_en(rel_dist)])
     
     final_vector_corr = pair_correlation(rel_dist, dr)
     
@@ -404,6 +436,8 @@ def simulate(algorithm, rescaling_bool, pressure_bool, error_bool, pair_correlat
 
     final_rel_dist = atomic_distances(init_pos, 0)
     j = 0
+    
+    rescale_flag = True
 
     for i in range(number_of_steps):
         rel_pos = atomic_distances(final_matrix_pos[:,-3:], 1)
@@ -417,7 +451,7 @@ def simulate(algorithm, rescaling_bool, pressure_bool, error_bool, pair_correlat
         final_vector_energy = np.concatenate((final_vector_energy, np.array([kin_en(next_step_velocity) + pot_en(rel_dist)])), axis=0, out=None)
         final_rel_dist = np.concatenate((final_rel_dist, atomic_distances(next_step_position, 0)), axis = 1, out = None)
         if pressure_bool == True:
-            T = 2*kin_en(final_matrix_vel[:,-3:])/(3*(n-1)*119.8)
+            T_measure = 2*kin_en(final_matrix_vel[:,-3:])/(3*(n-1)*119.8)
             final_vector_tba = np.concatenate((final_vector_tba, np.array([pressure(rel_dist)])), axis = 0, out = None)
             final_vector_press = np.concatenate((final_vector_press, np.array([np.sum([rho*119.8/T , -(rho/(3*n))*final_vector_tba[i]])])))
         
@@ -427,13 +461,23 @@ def simulate(algorithm, rescaling_bool, pressure_bool, error_bool, pair_correlat
         #Rescaling:
         if rescaling_bool ==True:
             window = 200
-            if  i>0 and i<int(0.7*number_of_steps) and i%window == 0 and abs(final_vector_energy[-1] - np.sum(final_vector_energy[-10:])/10) > 0.01*(np.sum(final_vector_energy[-10:])/10):
+            if i%window == 0 and rescale_flag == True:
                 j = j+1
-                l = np.sqrt((3*(n-1)*T)/(2*final_vector_kin[-1]*119.8))
+                l = np.sqrt((3*(n-1)*T)/(2*np.average(final_vector_kin[-window:])*119.8))
                 final_matrix_vel = final_matrix_vel * l
-                #T = 2*kin_en(final_matrix_vel[:,-3:])/(3*(n-1)*119.8)
+                print("l =", l)
                 print("T = ", T)
+                if abs(l - 1) < 0.01:
+                    print()
+                    rescale_flag = False
+                    equilibrium_step = i
+                    print("Equilibrium reached!!")
+                
     print("Number of rescalings: ", j)
+    if rescale_flag == False :
+        print("Eq step = ", equilibrium_step)
+    else:
+        print("System did not reach equilibrium!!")
     
     # Compute pressure:
     if pressure_bool == True:
@@ -467,7 +511,8 @@ def simulate(algorithm, rescaling_bool, pressure_bool, error_bool, pair_correlat
 
         
         
-    return final_vector_energy, final_vector_kin, final_vector_pot, final_vector_press, final_vector_corr, Press, S_a
+    return final_vector_energy, final_vector_kin, final_vector_pot, final_matrix_vel
+#, final_vector_press, final_vector_corr, Press, S_a
 
 def plot_energy(total, kinetic, potential):
     plt.plot(times, total, label = "Total")
