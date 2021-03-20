@@ -486,8 +486,8 @@ def simulate(algorithm, T, rescaling_bool, pressure_bool, error_bool, pair_corre
         Press = np.sum([1 , -(T/119.8*(3*n))*(1/(number_of_steps-n_0))*np.sum(final_vector_tba[-n_0:])])
         print("Pressure=", Press)
         
-    if pair_correlation_bool:
-        final_vector_corr = final_vector_corr / number_of_steps     # number_of_steps should become n_0
+    if pair_correlation_bool and i>=equilibrium_step:
+        final_vector_corr = final_vector_corr / (number_of_steps-equilibrium_step)     # number_of_steps should become n_0
 
     #print("Positions:\n" , final_matrix_pos)
     #print("Velocities:\n" , init_vel)
@@ -511,7 +511,7 @@ def simulate(algorithm, T, rescaling_bool, pressure_bool, error_bool, pair_corre
 
         
         
-    return final_vector_energy, final_vector_kin, final_vector_pot, final_matrix_vel
+    return final_vector_energy, final_vector_kin, final_vector_pot, final_matrix_vel, final_vector_corr, final_matrix_pos
 #, final_vector_press, final_vector_corr, Press, S_a
 
 def plot_energy(total, kinetic, potential):
@@ -543,5 +543,5 @@ def plot_pair_correlation(vector_corr):
     vector_corr = vector_corr[1:]
     x = bins_list[:(len(vector_corr))] + dr/2
     vector_corr = (2 * L**3 * vector_corr)/(4*np.pi* dr* n*(n-1)*x**2)
-    plt.plot(x, vector_corr)
+    plt.hist(vector_corr, x)
     plt.show()
