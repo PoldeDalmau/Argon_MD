@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 #n = 3   #number of particles
 #L = 1000   #System is of size LxL with the origin at the center. The units of L are of 1/s
 #init_pos = np.array([[0, 0, 0],[L-1, L-1, L-1], [1, 1, 1]])
-#init_vel = np.random.normal(np.sqrt(T/119.8), size = (n, 3))
+#init_vel = np.random.normal(np.sqrt(T), size = (n, 3))
 #init_vel = init_vel - np.mean(init_vel, axis=0)
 #e =  1.65 * pow(10,-21)
 #s =  3.405 * pow(10,-10)
@@ -138,7 +138,7 @@ def init_velocity():
         nx3 array containing the initial velocities of the particles. Each column represents an axis, each row a different particle
     """
     init_vel = np.zeros((n,3))
-    init_vel = np.random.normal(np.sqrt(T/119.8), size = (n, 3))
+    init_vel = np.random.normal(np.sqrt(T), size = (n, 3))
     #init_vel = init_vel - np.mean(init_vel, axis=0)
     
     return init_vel
@@ -360,10 +360,8 @@ def pressure(r):
     inf = np.zeros((n,n)) # nxn matrix
     inf[i] = np.inf # matrix with inifinity where r has zeros
     R = r + inf  # same matrix as r, but with ones where r has zeros. we do this to avoid dividing by zero
-    tba_matrix = -12*((2*(1/R)**12)-((1/R)**6))
+    tba_matrix = -12*1/2*((2*(1/R)**12)-((1/R)**6)) #factor 1/2 to avoid double counting when summing
     tba = np.sum(tba_matrix)
-    #rho = n/(L*L*L)
-    #P = (rho*119.8/T) - (rho/(3*n))*
     return tba
 
 def pair_correlation(rel_dist, dr):
@@ -452,9 +450,8 @@ def simulate(algorithm, T, rescaling_bool, pressure_bool, error_bool, pair_corre
         final_vector_energy = np.concatenate((final_vector_energy, np.array([kin_en(next_step_velocity) + pot_en(rel_dist)])), axis=0, out=None)
         final_rel_dist = np.concatenate((final_rel_dist, atomic_distances(next_step_position, 0)), axis = 1, out = None)
         if pressure_bool == True:
-            #T_measure = 2*kin_en(final_matrix_vel[:,-3:])/(3*(n-1)*119.8)
             final_vector_tba = np.concatenate((final_vector_tba, np.array([pressure(rel_dist)])), axis = 0, out = None)
-            final_vector_press = np.concatenate((final_vector_press, np.array([np.sum([rho*119.8/T , -(rho/(3*n))*final_vector_tba[i]])])))
+            final_vector_press = np.concatenate((final_vector_press, np.array([np.sum([rho/T , -(rho/(3*n))*final_vector_tba[i]])])))
         
         if pair_correlation_bool:   # will add condition that it only computes this when i>n_0 or something
             final_vector_corr += pair_correlation(rel_dist, dr)
@@ -464,7 +461,7 @@ def simulate(algorithm, T, rescaling_bool, pressure_bool, error_bool, pair_corre
             window = 200
             if i%window == 0 and rescale_flag == True:
                 j = j+1
-                l = np.sqrt((3*(n-1)*T)/(2*np.average(final_vector_kin[-window:])*119.8))
+                l = np.sqrt((3*(n-1)*T)/(2*np.average(final_vector_kin[-window:])))
                 final_matrix_vel = final_matrix_vel * l
                 print("l =", l)
                 if abs(l - 1) < 0.01:
@@ -482,7 +479,7 @@ def simulate(algorithm, T, rescaling_bool, pressure_bool, error_bool, pair_corre
     # Compute pressure:
     if pressure_bool == True:
         n_0 = equilibrium_step
-        Press = np.sum([1 , -(T/119.8*(3*n))*(1/(number_of_steps-n_0))*np.sum(final_vector_tba[-n_0:])])
+        Press = np.sum([1 , -(T/(3*n))*(1/(number_of_steps-n_0))*np.sum(final_vector_tba[-n_0:])])
         print("Pressure=", Press)
         
     if pair_correlation_bool:
