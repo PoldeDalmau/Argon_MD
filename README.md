@@ -11,4 +11,4 @@ Pol de Dalmau Huguet   (5414024)
 
 
 How to use our code:
-Open the Main.ipynb notebook and run each cell from top to bottom. Here we have written a script that can implement the Verlet Method in 3D for more n particles. One can adjust the number of time steps, number of particles, time step size, system size L, the lattice constant a of the fcc lattice and the temperature. One will obtain a plot of energy (kinetic, potential and total) which is rescaled several times and a value for the pressure in normalized units.
+Open the Test.ipynb notebook and run each cell from top to bottom. Here we have written a script that can implement the Verlet Method in 3D for more n particles. One can adjust the number of time steps, number of particles, time step size, system size L, the lattice constant a of the fcc lattice and the temperature. One will obtain a plot of energy (kinetic, potential and total) which is rescaled several times and a value for the pressure in normalized units. Also, if the boolean values in the simulate function are set to "True", the system will also return a pair correlation function and the error on the pressure.

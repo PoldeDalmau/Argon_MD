@@ -330,10 +330,11 @@ def pot_en(r): #position is the last step position of the particles
     """
     #rel_pos = atomic_distances(position, 1) # with pos = np.array(n, 3)
     #r = atomic_distances(position, 0) #n x n simmetric matrix, r[i,j] is the distance between the i-th and the j-th particles
-    i = np.where(r == 0) # indices where the r matrix is 0
+    rel = np.copy(r)
+    i = np.where(rel == 0) # indices where the r matrix is 0
     ones = np.zeros((n,n)) # nxn matrix
     ones[i] = 1 # matrix with ones where r has zeros
-    R = r + ones  # same matrix as r, but with ones where r has zeros. we do this to avoid dividing by zero
+    R = rel + ones  # same matrix as r, but with ones where r has zeros. we do this to avoid dividing by zero
     u = 1/2*4*(1/R**12 - 1/R**6) # factor 1/2 to compensate for double counting
     U = np.sum(u)
     return U
@@ -451,7 +452,7 @@ def simulate(algorithm, T, rescaling_bool, pressure_bool, error_bool, pair_corre
         final_vector_energy = np.concatenate((final_vector_energy, np.array([kin_en(next_step_velocity) + pot_en(rel_dist)])), axis=0, out=None)
         final_rel_dist = np.concatenate((final_rel_dist, atomic_distances(next_step_position, 0)), axis = 1, out = None)
         if pressure_bool == True:
-            T_measure = 2*kin_en(final_matrix_vel[:,-3:])/(3*(n-1)*119.8)
+            #T_measure = 2*kin_en(final_matrix_vel[:,-3:])/(3*(n-1)*119.8)
             final_vector_tba = np.concatenate((final_vector_tba, np.array([pressure(rel_dist)])), axis = 0, out = None)
             final_vector_press = np.concatenate((final_vector_press, np.array([np.sum([rho*119.8/T , -(rho/(3*n))*final_vector_tba[i]])])))
         
@@ -466,9 +467,7 @@ def simulate(algorithm, T, rescaling_bool, pressure_bool, error_bool, pair_corre
                 l = np.sqrt((3*(n-1)*T)/(2*np.average(final_vector_kin[-window:])*119.8))
                 final_matrix_vel = final_matrix_vel * l
                 print("l =", l)
-                print("T = ", T)
                 if abs(l - 1) < 0.01:
-                    print()
                     rescale_flag = False
                     equilibrium_step = i
                     print("Equilibrium reached!!")
@@ -477,17 +476,17 @@ def simulate(algorithm, T, rescaling_bool, pressure_bool, error_bool, pair_corre
     if rescale_flag == False :
         print("Eq step = ", equilibrium_step)
     else:
+        equilibrium_step = 1
         print("System did not reach equilibrium!!")
     
     # Compute pressure:
     if pressure_bool == True:
-        n_0 = int(0.7*number_of_steps)
-        #P = (1/(n-n_0))*np.sum(final_vector_tba[-n_0:])
+        n_0 = equilibrium_step
         Press = np.sum([1 , -(T/119.8*(3*n))*(1/(number_of_steps-n_0))*np.sum(final_vector_tba[-n_0:])])
         print("Pressure=", Press)
         
-    if pair_correlation_bool and i>=equilibrium_step:
-        final_vector_corr = final_vector_corr / (number_of_steps-equilibrium_step)     # number_of_steps should become n_0
+    if pair_correlation_bool:
+        final_vector_corr = final_vector_corr / number_of_steps     # number_of_steps should become n_0
 
     #print("Positions:\n" , final_matrix_pos)
     #print("Velocities:\n" , init_vel)
@@ -499,20 +498,22 @@ def simulate(algorithm, T, rescaling_bool, pressure_bool, error_bool, pair_corre
     
     #now we compute the error with the steps below
     if error_bool == True:
-        N = int(0.3*number_of_steps)
+        b = 1
+        N = int(number_of_steps - equilibrium_step)
         P = np.copy((final_vector_press[-N:]))
-        S_a = np.zeros((int(N/6), 1))
-        for b in range(1, int(N/6)):
+        S_a = np.zeros((500, 1))
+        for b in range(1, 500):
             Nb = int(N/b)
             p=np.zeros(Nb)
+            P=P[:(Nb*b)]
             P_shape=np.reshape(P, (Nb,b))
+            P = np.copy((final_vector_press[-N:]))
             p = np.sum(P_shape, axis = 1)/b
             S_a[b]=np.sqrt((1/(Nb-1))*(((1/Nb)*np.sum(np.square(p)))-np.square((1/Nb)*np.sum(p))))
 
+    rho = N/(L**3)
         
-        
-    return final_vector_energy, final_vector_kin, final_vector_pot, final_matrix_vel, final_vector_corr, final_matrix_pos
-#, final_vector_press, final_vector_corr, Press, S_a
+    return final_vector_energy, final_vector_kin, final_vector_pot, final_vector_press, final_vector_corr, Press, S_a, rho
 
 def plot_energy(total, kinetic, potential):
     plt.plot(times, total, label = "Total")
@@ -538,10 +539,10 @@ def plot_error(S_a):
 def plot_pair_correlation(vector_corr):
     bins_list = np.arange(2*dr, L+2*dr, dr)
     plt.title("pair correlation function")
-    plt.xlabel("r")
+    plt.xlabel("$r$/$\sigma$")
     plt.ylabel("g(r)")
     vector_corr = vector_corr[1:]
     x = bins_list[:(len(vector_corr))] + dr/2
     vector_corr = (2 * L**3 * vector_corr)/(4*np.pi* dr* n*(n-1)*x**2)
-    plt.hist(vector_corr, x)
+    plt.plot(x, vector_corr)
     plt.show()
